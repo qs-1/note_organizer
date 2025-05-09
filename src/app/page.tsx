@@ -1,103 +1,282 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import NoteList from '@/components/notes/NoteList';
+import NoteEditor from '@/components/notes/NoteEditor';
+import NoteDetails from '@/components/notes/NoteDetails';
+import { Note, SummaryType } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
+import { exportNoteToAnki } from '@/lib/api/anki';
+import { generateSummary, OPENROUTER_MODELS } from '@/lib/api/openrouter';
+
+// Create some sample notes for testing
+const initialNotes: Note[] = [
+  {
+    id: '1',
+    title: 'Introduction to Biology',
+    content: 'Biology is the study of living organisms and their interactions with each other and their environments.',
+    tags: ['Biology'],
+    createdAt: new Date(2023, 4, 10).toISOString(),
+    updatedAt: new Date(2023, 4, 10).toISOString(),
+  },
+  {
+    id: '2',
+    title: 'Quantum Physics Basics',
+    content: 'Quantum physics deals with the behavior of matter and light on the atomic and subatomic scales.',
+    tags: ['Physics'],
+    createdAt: new Date(2023, 4, 15).toISOString(),
+    updatedAt: new Date(2023, 4, 15).toISOString(),
+  },
+  {
+    id: '3',
+    title: 'Literature Review Methods',
+    content: 'A literature review surveys scholarly articles, books, and other sources relevant to a particular issue, research question, or theory.',
+    tags: ['Research'],
+    createdAt: new Date(2023, 4, 20).toISOString(),
+    updatedAt: new Date(2023, 4, 20).toISOString(),
+  },
+];
 
 export default function Home() {
+  // State for notes and active note
+  const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  
+  // Settings for OpenRouter
+  const [apiKey, setApiKey] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>(OPENROUTER_MODELS[0].id);
+  
+  // Status messages
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  
+  // Get the active note
+  const activeNote = activeNoteId 
+    ? notes.find(note => note.id === activeNoteId) || null
+    : null;
+  
+  // Load saved notes and settings from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Load notes
+      const savedNotes = localStorage.getItem('smartNotes');
+      if (savedNotes) {
+        try {
+          const parsedNotes = JSON.parse(savedNotes);
+          setNotes(parsedNotes);
+          
+          // Set the first note as active if any exist
+          if (parsedNotes.length > 0 && !activeNoteId) {
+            setActiveNoteId(parsedNotes[0].id);
+          }
+        } catch (error) {
+          console.error('Error parsing saved notes:', error);
+        }
+      }
+      
+      // Load API key
+      const savedApiKey = localStorage.getItem('openrouterApiKey');
+      if (savedApiKey) {
+        setApiKey(savedApiKey);
+      }
+      
+      // Load selected model
+      const savedModel = localStorage.getItem('selectedModel');
+      if (savedModel) {
+        setSelectedModel(savedModel);
+      }
+    }
+  }, []);
+  
+  // Save notes to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('smartNotes', JSON.stringify(notes));
+    }
+  }, [notes]);
+  
+  // Create a new note
+  const handleCreateNote = () => {
+    const newNote: Note = {
+      id: uuidv4(),
+      title: 'New Note',
+      content: '',
+      tags: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setNotes([newNote, ...notes]);
+    setActiveNoteId(newNote.id);
+  };
+  
+  // Select a note
+  const handleNoteSelect = (note: Note) => {
+    setActiveNoteId(note.id);
+  };
+  
+  // Save note changes
+  const handleSaveNote = (updatedContent: string, updatedTitle: string) => {
+    if (!activeNoteId) return;
+    
+    const updatedNotes = notes.map(note => {
+      if (note.id === activeNoteId) {
+        return {
+          ...note,
+          title: updatedTitle,
+          content: updatedContent,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return note;
+    });
+    
+    setNotes(updatedNotes);
+    setStatusMessage('Note saved successfully');
+    
+    // Clear status message after a delay
+    setTimeout(() => {
+      setStatusMessage(null);
+    }, 3000);
+  };
+  
+  // Add a tag to the active note
+  const handleAddTag = (tag: string) => {
+    if (!activeNoteId) return;
+    
+    const updatedNotes = notes.map(note => {
+      if (note.id === activeNoteId) {
+        // Only add the tag if it doesn't already exist
+        if (!note.tags.includes(tag)) {
+          return {
+            ...note,
+            tags: [...note.tags, tag],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      }
+      return note;
+    });
+    
+    setNotes(updatedNotes);
+  };
+  
+  // Remove a tag from the active note
+  const handleRemoveTag = (tag: string) => {
+    if (!activeNoteId) return;
+    
+    const updatedNotes = notes.map(note => {
+      if (note.id === activeNoteId) {
+        return {
+          ...note,
+          tags: note.tags.filter(t => t !== tag),
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return note;
+    });
+    
+    setNotes(updatedNotes);
+  };
+  
+  // Generate a summary for the active note
+  const handleGenerateSummary = async (type: SummaryType) => {
+    if (!activeNoteId || !activeNote || !apiKey) {
+      setStatusMessage('Please save your OpenRouter API key in settings');
+      setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
+    
+    setIsProcessing(true);
+    setStatusMessage('Generating summary...');
+    
+    try {
+      const summary = await generateSummary({
+        text: activeNote.content,
+        model: selectedModel,
+        type,
+        apiKey,
+      });
+      
+      // Update the note with the summary
+      const updatedNotes = notes.map(note => {
+        if (note.id === activeNoteId) {
+          return {
+            ...note,
+            summary,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return note;
+      });
+      
+      setNotes(updatedNotes);
+      setStatusMessage('Summary generated successfully');
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      setStatusMessage(error instanceof Error ? error.message : 'Error generating summary');
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setStatusMessage(null), 3000);
+    }
+  };
+  
+  // Export the active note to Anki
+  const handleExportAnki = () => {
+    if (!activeNoteId || !activeNote) return;
+    
+    try {
+      exportNoteToAnki(activeNote);
+      setStatusMessage('Note exported to Anki successfully');
+    } catch (error) {
+      console.error('Error exporting to Anki:', error);
+      setStatusMessage('Error exporting to Anki');
+    }
+    
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+  
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex h-screen relative bg-white">
+      {/* Left Sidebar - Notes List */}
+      <NoteList 
+        notes={notes}
+        activeNoteId={activeNoteId}
+        onNoteSelect={handleNoteSelect}
+        onCreateNote={handleCreateNote}
+      />
+      
+      {/* Main Content Area */}
+      <NoteEditor 
+        note={activeNote}
+        onSave={handleSaveNote}
+      />
+      
+      {/* Right Sidebar - Note Details */}
+      <NoteDetails 
+        note={activeNote}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
+        onGenerateSummary={handleGenerateSummary}
+        onExportAnki={handleExportAnki}
+      />
+      
+      {/* Status Message */}
+      {statusMessage && (
+        <div className="absolute bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg">
+          {statusMessage}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
+      
+      {/* Processing Overlay */}
+      {isProcessing && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-md shadow-lg">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+            <p className="mt-2 text-center text-gray-800">Processing...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
