@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, FileUp } from 'lucide-react';
 import { Note } from '@/types';
+import FileUploader from './FileUploader';
 
 interface NoteItemProps {
   note: Note;
@@ -43,10 +44,18 @@ interface NoteListProps {
   activeNoteId: string | null;
   onNoteSelect: (note: Note) => void;
   onCreateNote: () => void;
+  onImportDocument: (text: string, title: string) => void;
 }
 
-export default function NoteList({ notes, activeNoteId, onNoteSelect, onCreateNote }: NoteListProps) {
+export default function NoteList({ 
+  notes, 
+  activeNoteId, 
+  onNoteSelect, 
+  onCreateNote,
+  onImportDocument
+}: NoteListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFileUploaderOpen, setIsFileUploaderOpen] = useState(false);
   
   // Filter notes based on search query
   const filteredNotes = searchQuery 
@@ -57,17 +66,35 @@ export default function NoteList({ notes, activeNoteId, onNoteSelect, onCreateNo
       )
     : notes;
 
+  // Handle text extraction from uploaded files
+  const handleTextExtracted = (text: string, filename: string) => {
+    // Extract title from filename (remove extension)
+    const title = filename.split('.').slice(0, -1).join('.');
+    onImportDocument(text, title);
+  };
+
   return (
     <div className="w-64 border-r border-gray-200 bg-gray-50 flex flex-col h-full text-gray-800">
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
         <h1 className="text-xl font-semibold text-gray-800">Notes</h1>
-        <button 
-          className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
-          onClick={onCreateNote}
-          aria-label="Create new note"
-        >
-          <Plus className="h-5 w-5" />
-        </button>
+        <div className="flex space-x-1">
+          <button 
+            className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
+            onClick={() => setIsFileUploaderOpen(true)}
+            aria-label="Import document"
+            title="Import document"
+          >
+            <FileUp className="h-5 w-5" />
+          </button>
+          <button 
+            className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
+            onClick={onCreateNote}
+            aria-label="Create new note"
+            title="Create new note"
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+        </div>
       </div>
       
       <div className="p-3">
@@ -99,6 +126,13 @@ export default function NoteList({ notes, activeNoteId, onNoteSelect, onCreateNo
           </div>
         )}
       </div>
+
+      {/* File Uploader Modal */}
+      <FileUploader 
+        isOpen={isFileUploaderOpen}
+        onClose={() => setIsFileUploaderOpen(false)}
+        onTextExtracted={handleTextExtracted}
+      />
     </div>
   );
 } 

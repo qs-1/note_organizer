@@ -257,6 +257,27 @@ export default function Home() {
     setTimeout(() => setStatusMessage(null), 3000);
   };
   
+  // Handle document import (PDF, DOCX, images)
+  const handleImportDocument = (extractedText: string, suggestedTitle: string) => {
+    // Create a new note with the extracted text
+    const newNote: Note = {
+      id: uuidv4(),
+      title: suggestedTitle || 'Imported Document',
+      content: extractedText,
+      tags: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Add to notes collection
+    setNotes([newNote, ...notes]);
+    setActiveNoteId(newNote.id);
+    
+    // Show success message
+    setStatusMessage('Document imported successfully');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+  
   return (
     <div className="flex h-screen relative bg-white">
       {/* Left Sidebar - Notes List */}
@@ -265,6 +286,7 @@ export default function Home() {
         activeNoteId={activeNoteId}
         onNoteSelect={handleNoteSelect}
         onCreateNote={handleCreateNote}
+        onImportDocument={handleImportDocument}
       />
       
       {/* Main Content Area */}
