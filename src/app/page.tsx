@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import NoteList from '@/components/notes/NoteList';
 import NoteEditor from '@/components/notes/NoteEditor';
 import NoteDetails from '@/components/notes/NoteDetails';
+import Settings from '@/components/notes/Settings';
 import { Note, SummaryType } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { exportNoteToAnki } from '@/lib/api/anki';
@@ -45,6 +46,7 @@ export default function Home() {
   // Settings for OpenRouter
   const [apiKey, setApiKey] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>(OPENROUTER_MODELS[0].id);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Status messages
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -181,9 +183,15 @@ export default function Home() {
   
   // Generate a summary for the active note
   const handleGenerateSummary = async (type: SummaryType) => {
-    if (!activeNoteId || !activeNote || !apiKey) {
-      setStatusMessage('Please save your OpenRouter API key in settings');
+    if (!activeNoteId || !activeNote) {
+      setStatusMessage('Please select a note first');
       setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
+    
+    if (!apiKey) {
+      setStatusMessage('Please add your OpenRouter API key in settings');
+      setIsSettingsOpen(true);
       return;
     }
     
@@ -235,6 +243,19 @@ export default function Home() {
     
     setTimeout(() => setStatusMessage(null), 3000);
   };
+
+  // Save settings
+  const handleSaveSettings = (newApiKey: string, newModel: string) => {
+    setApiKey(newApiKey);
+    setSelectedModel(newModel);
+    
+    // Save to localStorage
+    localStorage.setItem('openrouterApiKey', newApiKey);
+    localStorage.setItem('selectedModel', newModel);
+    
+    setStatusMessage('Settings saved successfully');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
   
   return (
     <div className="flex h-screen relative bg-white">
@@ -259,6 +280,16 @@ export default function Home() {
         onRemoveTag={handleRemoveTag}
         onGenerateSummary={handleGenerateSummary}
         onExportAnki={handleExportAnki}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+      
+      {/* Settings Modal */}
+      <Settings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        apiKey={apiKey}
+        selectedModel={selectedModel}
+        onSaveSettings={handleSaveSettings}
       />
       
       {/* Status Message */}

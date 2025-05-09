@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, Tag, X, Plus, Download } from 'lucide-react';
+import { Brain, Tag, X, Plus, Download, Settings } from 'lucide-react';
 import { Note, SummaryType } from '@/types';
 
 interface NoteDetailsProps {
@@ -8,6 +8,7 @@ interface NoteDetailsProps {
   onRemoveTag: (tag: string) => void;
   onGenerateSummary: (type: SummaryType) => void;
   onExportAnki: () => void;
+  onOpenSettings: () => void;
 }
 
 export default function NoteDetails({ 
@@ -15,7 +16,8 @@ export default function NoteDetails({
   onAddTag, 
   onRemoveTag, 
   onGenerateSummary, 
-  onExportAnki 
+  onExportAnki,
+  onOpenSettings
 }: NoteDetailsProps) {
   const [newTag, setNewTag] = useState('');
   const [summaryType, setSummaryType] = useState<SummaryType>('brief');
@@ -38,8 +40,15 @@ export default function NoteDetails({
   if (!note) {
     return (
       <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-800">Note Details</h3>
+          <button 
+            onClick={onOpenSettings}
+            className="p-1 rounded hover:bg-gray-200 text-gray-600"
+            aria-label="Open settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
         </div>
         <div className="p-4 text-gray-500 text-center">
           Select a note to see details
@@ -50,8 +59,15 @@ export default function NoteDetails({
   
   return (
     <div className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col text-gray-800">
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-800">Note Details</h3>
+        <button 
+          onClick={onOpenSettings}
+          className="p-1 rounded hover:bg-gray-200 text-gray-600"
+          aria-label="Open settings"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
       </div>
       
       {/* Tags Section */}

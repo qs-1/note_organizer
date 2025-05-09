@@ -36,8 +36,8 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
   }
   
   return (
-    <div className="flex-1 flex flex-col bg-white">
-      <div className="border-b border-gray-200 p-4 flex items-center justify-between bg-white">
+    <div className="flex-1 flex flex-col bg-white overflow-hidden">
+      <div className="border-b border-gray-200 p-4 flex items-center justify-between bg-white flex-shrink-0">
         <div className="flex-1 pr-4">
           <input
             type="text"
@@ -72,24 +72,26 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
         </div>
       </div>
       
-      <div className="flex-1 p-6 overflow-auto bg-white" style={{ backgroundColor: 'white' }}>
-        {isEditing ? (
-          <textarea
-            className="w-full h-full p-0 text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none resize-none"
-            style={{ backgroundColor: 'white', color: '#2d3748' }}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Start writing your note..."
-          />
-        ) : (
-          <div className="prose max-w-none bg-white" style={{ backgroundColor: 'white' }}>
-            {content.split('\n').map((line, index) => (
-              <p key={index} className="text-gray-800" style={{ color: '#2d3748' }}>
-                {line || <br />}
-              </p>
-            ))}
-          </div>
-        )}
+      <div className="flex-1 overflow-auto bg-white" style={{ backgroundColor: 'white' }}>
+        <div className="p-6">
+          {isEditing ? (
+            <textarea
+              className="w-full h-full text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none resize-none"
+              style={{ backgroundColor: 'white', color: '#2d3748', height: 'calc(100vh - 120px)' }}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Start writing your note..."
+            />
+          ) : (
+            <div className="prose max-w-none bg-white" style={{ backgroundColor: 'white' }}>
+              {content.split('\n').map((line, index) => (
+                <p key={index} className="text-gray-800" style={{ color: '#2d3748' }}>
+                  {line || <br />}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
