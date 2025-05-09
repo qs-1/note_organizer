@@ -72,7 +72,7 @@ export default function Settings({
             ))}
           </select>
           <p className="mt-1 text-xs text-gray-500">
-            Select a model for AI summaries. Free models have (Free) in their name.
+            Select a model for AI summaries. All models are currently free to use.
           </p>
         </div>
 

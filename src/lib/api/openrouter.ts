@@ -2,9 +2,9 @@ import { SummaryType } from '@/types';
 
 // OpenRouter models configuration
 export const OPENROUTER_MODELS = [
-  { id: 'openai/gpt-3.5-turbo', name: 'OpenAI GPT-3.5 Turbo' },
-  { id: 'anthropic/claude-3-haiku', name: 'Anthropic Claude 3 Haiku' },
-  { id: 'meta-llama/llama-3-8b-instruct', name: 'Meta Llama 3 8B Instruct' },
+  { id: 'openai/gpt-3.5-turbo', name: 'OpenAI GPT-3.5 Turbo (Free)' },
+  { id: 'anthropic/claude-3-haiku', name: 'Anthropic Claude 3 Haiku (Free)' },
+  { id: 'meta-llama/llama-3-8b-instruct', name: 'Meta Llama 3 8B Instruct (Free)' },
   { id: 'deepseek/deepseek-chat-v3-0324:free', name: 'DeepSeek Chat V3 (Free)' },
   { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1 (Free)' },
   { id: 'google/gemini-2.0-flash-exp:free', name: 'Google Gemini 2.0 Flash Exp (Free)' },

@@ -182,7 +182,7 @@ export default function Home() {
   };
   
   // Generate a summary for the active note
-  const handleGenerateSummary = async (type: SummaryType) => {
+  const handleGenerateSummary = async (type: SummaryType, model?: string) => {
     if (!activeNoteId || !activeNote) {
       setStatusMessage('Please select a note first');
       setTimeout(() => setStatusMessage(null), 3000);
@@ -201,7 +201,7 @@ export default function Home() {
     try {
       const summary = await generateSummary({
         text: activeNote.content,
-        model: selectedModel,
+        model: model || selectedModel,
         type,
         apiKey,
       });
