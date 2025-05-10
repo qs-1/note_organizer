@@ -9,7 +9,7 @@ import Settings from '@/components/notes/Settings';
 import { Note, SummaryType, Folder } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { exportNoteToAnki } from '@/lib/api/anki';
-import { generateSummary, OPENROUTER_MODELS } from '@/lib/api/openrouter';
+import { generateSummary, generateTags, OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
 // Create some sample notes for testing
 const initialNotes: Note[] = [
@@ -368,6 +368,65 @@ export default function Home() {
     }
   };
   
+  // Auto-tag the active note using AI
+  const handleAutoTag = async () => {
+    if (!activeNoteId || !activeNote) {
+      setStatusMessage('Please select a note first');
+      setTimeout(() => setStatusMessage(null), 3000);
+      return;
+    }
+    
+    if (!apiKey) {
+      setStatusMessage('Please add your OpenRouter API key in settings');
+      setIsSettingsOpen(true);
+      return;
+    }
+    
+    setIsProcessing(true);
+    setStatusMessage('Generating tags...');
+    
+    try {
+      const suggestedTags = await generateTags({
+        text: activeNote.content,
+        title: activeNote.title,
+        model: selectedModel,
+        apiKey,
+      });
+      
+      // Update the note with the new tags
+      // Filter out tags that already exist in the note
+      const newTags = suggestedTags.filter(tag => !activeNote.tags.includes(tag));
+      
+      if (newTags.length === 0) {
+        setStatusMessage('No new tags found');
+        setIsProcessing(false);
+        setTimeout(() => setStatusMessage(null), 3000);
+        return;
+      }
+      
+      // Add all suggested tags to the note
+      const updatedNotes = notes.map(note => {
+        if (note.id === activeNoteId) {
+          return {
+            ...note,
+            tags: [...note.tags, ...newTags],
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return note;
+      });
+      
+      setNotes(updatedNotes);
+      setStatusMessage(`Added ${newTags.length} tags successfully`);
+    } catch (error) {
+      console.error('Error generating tags:', error);
+      setStatusMessage('Failed to generate tags');
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setStatusMessage(null), 3000);
+    }
+  };
+  
   // Export the active note to Anki
   const handleExportAnki = () => {
     if (!activeNoteId || !activeNote) {
@@ -465,6 +524,7 @@ export default function Home() {
         onGenerateSummary={handleGenerateSummary}
         isProcessing={isProcessing}
         onExportAnki={handleExportAnki}
+        onAutoTag={handleAutoTag}
       />
       
       {/* Settings Modal */}

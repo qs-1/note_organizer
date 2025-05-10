@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, Tag, X, Plus, Download, Copy, Check, ChevronDown, Trash2 } from 'lucide-react';
+import { Brain, Tag, X, Plus, Download, Copy, Check, ChevronDown, Trash2, TagsIcon } from 'lucide-react';
 import { Note, SummaryType } from '@/types';
 import { OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
@@ -10,6 +10,7 @@ export interface NoteDetailsProps {
   onGenerateSummary: (type: SummaryType) => void;
   onExportAnki: () => void;
   onDelete: () => void;
+  onAutoTag?: () => void;
   isProcessing?: boolean;
 }
 
@@ -20,6 +21,7 @@ export default function NoteDetails({
   onGenerateSummary, 
   onExportAnki,
   onDelete,
+  onAutoTag,
   isProcessing
 }: NoteDetailsProps) {
   const [newTag, setNewTag] = useState('');
@@ -113,7 +115,21 @@ export default function NoteDetails({
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Suggested tags will appear here</p>
+        
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-xs text-gray-500">Suggested tags will appear here</p>
+          
+          {onAutoTag && (
+            <button 
+              className={`text-xs ${isProcessing ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800'} flex items-center gap-1`}
+              onClick={() => !isProcessing && onAutoTag()}
+              disabled={isProcessing}
+              title="Generate tags using AI"
+            >
+              {isProcessing ? 'Processing...' : 'Auto-Tag'}
+            </button>
+          )}
+        </div>
       </div>
       
       {/* AI Tools Section */}
