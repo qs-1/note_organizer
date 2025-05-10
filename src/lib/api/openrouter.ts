@@ -29,13 +29,13 @@ export interface AutoTagParams {
 function getSummaryPrompt(text: string, type: SummaryType): string {
   switch (type) {
     case 'brief':
-      return `Please provide a brief, concise summary (2-3 sentences) of the following text, capturing its main points:\n\n${text}`;
+      return `Summarize the following text in 2-3 concise sentences capturing the main points. DO NOT include phrases like "Here is a summary" or "In summary". DO NOT add any introduction or conclusion. ONLY output the summary text itself:\n\n${text}`;
     case 'detailed':
-      return `Please provide a detailed summary of the following text, explaining the main concepts and important details:\n\n${text}`;
+      return `Provide a detailed summary of the following text explaining the main concepts and important details. DO NOT include phrases like "Here is a summary" or "In conclusion". DO NOT add any introduction or conclusion. ONLY output the summary text itself:\n\n${text}`;
     case 'bullets':
-      return `Please summarize the following text as 3-5 bullet points, highlighting the key takeaways:\n\n${text}`;
+      return `Summarize the following text as 3-5 bullet points highlighting the key takeaways. DO NOT include phrases like "Here are the bullet points" or any other introduction. Start directly with the bullet points:\n\n${text}`;
     default:
-      return `Please summarize the following text in 2-3 sentences:\n\n${text}`;
+      return `Summarize the following text in 2-3 sentences. DO NOT include phrases like "Here is a summary" or any other introduction or conclusion. ONLY output the summary text itself:\n\n${text}`;
   }
 }
 
@@ -82,17 +82,42 @@ export async function generateSummary({ text, model, type, apiKey }: SummarizePa
     const data = await response.json();
     
     // Handle different response formats for different models
+    let summaryText = '';
     if (data.choices && data.choices.length > 0) {
       if (data.choices[0].message && data.choices[0].message.content) {
-        return data.choices[0].message.content;
+        summaryText = data.choices[0].message.content;
       } else if (data.choices[0].text) {
         // Some models might return text directly
-        return data.choices[0].text;
+        summaryText = data.choices[0].text;
       }
     }
     
-    // If we couldn't extract content in the expected format
-    throw new Error("The model returned a response in an unexpected format. Please try a different model.");
+    if (!summaryText) {
+      throw new Error("The model returned an empty response");
+    }
+    
+    // Post-process the summary to remove common introductory phrases
+    summaryText = summaryText.trim();
+    
+    // Remove common phrases that models might include despite instructions
+    const phrasesToRemove = [
+      /^here is a summary:?\s*/i,
+      /^here are the key points:?\s*/i, 
+      /^summary:?\s*/i,
+      /^in summary:?\s*/i,
+      /^the summary is:?\s*/i,
+      /^here are the bullet points:?\s*/i,
+      /^bullet points:?\s*/i,
+      /^key takeaways:?\s*/i,
+      /^to summarize:?\s*/i,
+      /^in conclusion:?\s*/i
+    ];
+    
+    for (const phrase of phrasesToRemove) {
+      summaryText = summaryText.replace(phrase, '');
+    }
+    
+    return summaryText;
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Error generating summary: ${error.message}`);
