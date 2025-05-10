@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { X, Settings as SettingsIcon } from 'lucide-react';
 import { OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
 interface SettingsProps {
@@ -7,89 +6,77 @@ interface SettingsProps {
   onClose: () => void;
   apiKey: string;
   selectedModel: string;
-  onSaveSettings: (apiKey: string, model: string) => void;
+  onSave: (apiKey: string, model: string) => void;
 }
 
-export default function Settings({ 
-  isOpen, 
-  onClose, 
-  apiKey, 
-  selectedModel,
-  onSaveSettings 
-}: SettingsProps) {
-  const [key, setKey] = useState(apiKey);
-  const [model, setModel] = useState(selectedModel);
-
+export default function Settings({ isOpen, onClose, apiKey, selectedModel, onSave }: SettingsProps) {
+  const [newApiKey, setNewApiKey] = useState(apiKey);
+  const [newModel, setNewModel] = useState(selectedModel);
+  
   if (!isOpen) return null;
-
-  const handleSave = () => {
-    onSaveSettings(key, model);
-    onClose();
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(newApiKey, newModel);
   };
-
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-800">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <SettingsIcon className="h-5 w-5" />
-            Settings
-          </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">
-            OpenRouter API Key
-          </label>
-          <input 
-            type="password"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            placeholder="Enter your OpenRouter API key"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            You can get a key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">openrouter.ai/keys</a>
-          </p>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
-            AI Model
-          </label>
-          <select 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-          >
-            {OPENROUTER_MODELS.map(modelOption => (
-              <option key={modelOption.id} value={modelOption.id}>
-                {modelOption.name}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-gray-500">
-            Select a model for AI summaries. All models are currently free to use.
-          </p>
-        </div>
-
-        <div className="flex justify-end">
-          <button 
-            className="px-4 py-2 mr-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button 
-            className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleSave}
-          >
-            Save Settings
-          </button>
-        </div>
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4">Settings</h2>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="apiKey">
+              OpenRouter API Key
+            </label>
+            <input
+              id="apiKey"
+              type="password"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={newApiKey}
+              onChange={(e) => setNewApiKey(e.target.value)}
+              placeholder="sk_or-..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenRouter.ai</a>
+            </p>
+          </div>
+          
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="model">
+              Default AI Model
+            </label>
+            <select
+              id="model"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={newModel}
+              onChange={(e) => setNewModel(e.target.value)}
+            >
+              {OPENROUTER_MODELS.map(model => (
+                <option key={model.id} value={model.id}>
+                  {model.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

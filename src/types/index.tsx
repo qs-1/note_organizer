@@ -22,4 +22,6 @@ export interface Note {
     path: string;
     parentId: string | null;
     children: Folder[];
+    order?: number;
+    isExpanded?: boolean;
   } 

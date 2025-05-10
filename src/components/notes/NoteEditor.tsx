@@ -42,40 +42,35 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
   }
   
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden">
-      <div className="border-b border-gray-200 p-4 flex items-center justify-between bg-white flex-shrink-0">
-        <div className="flex-1 pr-4">
-          <input
-            type="text"
-            className="w-full text-xl font-semibold bg-transparent border-0 focus:ring-0 focus:outline-none text-gray-800"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Note Title"
-          />
-        </div>
-        <div className="flex space-x-2">
-          {hasChanges && (
-            <button 
-              className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
-              onClick={handleSave}
-            >
-              Save
-            </button>
-          )}
-        </div>
+    <div className="flex-1 flex flex-col bg-white">
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+        <input
+          type="text"
+          className="text-xl font-medium text-gray-800 w-full border-none focus:outline-none focus:ring-0"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Note title"
+        />
+        
+        <button
+          className={`px-3 py-1 rounded-md ml-2 ${
+            hasChanges 
+              ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+          onClick={handleSave}
+          disabled={!hasChanges}
+        >
+          Save
+        </button>
       </div>
       
-      <div className="flex-1 overflow-auto bg-white" style={{ backgroundColor: 'white' }}>
-        <div className="p-6">
-          <textarea
-            className="w-full h-full text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none resize-none"
-            style={{ backgroundColor: 'white', color: '#2d3748', height: 'calc(100vh - 120px)' }}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Start writing your note..."
-          />
-        </div>
-      </div>
+      <textarea
+        className="flex-1 p-4 text-gray-800 resize-none w-full border-none focus:outline-none focus:ring-0"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="Start writing your note here..."
+      />
     </div>
   );
 } 

@@ -3,13 +3,14 @@ import { Brain, Tag, X, Plus, Download, Copy, Check, ChevronDown, Trash2 } from 
 import { Note, SummaryType } from '@/types';
 import { OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
-interface NoteDetailsProps {
-  note: Note | null;
+export interface NoteDetailsProps {
+  note: Note;
   onAddTag: (tag: string) => void;
   onRemoveTag: (tag: string) => void;
-  onGenerateSummary: (type: SummaryType, model?: string) => void;
+  onGenerateSummary: (type: SummaryType) => void;
   onExportAnki: () => void;
   onDelete: () => void;
+  isProcessing?: boolean;
 }
 
 export default function NoteDetails({ 
@@ -18,7 +19,8 @@ export default function NoteDetails({
   onRemoveTag, 
   onGenerateSummary, 
   onExportAnki,
-  onDelete
+  onDelete,
+  isProcessing
 }: NoteDetailsProps) {
   const [newTag, setNewTag] = useState('');
   const [summaryType, setSummaryType] = useState<SummaryType>('brief');
@@ -147,13 +149,14 @@ export default function NoteDetails({
           <div className="flex items-center justify-between">
             <div className="relative">
               <button 
-                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                onClick={() => setSummaryMenuOpen(!summaryMenuOpen)}
+                className={`text-xs ${isProcessing ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800'} flex items-center gap-1`}
+                onClick={() => !isProcessing && setSummaryMenuOpen(!summaryMenuOpen)}
+                disabled={isProcessing}
               >
-                Generate Summary
+                {isProcessing ? 'Processing...' : 'Generate Summary'}
               </button>
               
-              {summaryMenuOpen && (
+              {summaryMenuOpen && !isProcessing && (
                 <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                   <div className="p-2">
                     <button 
@@ -161,8 +164,9 @@ export default function NoteDetails({
                       onClick={() => {
                         setSummaryType('brief');
                         setSummaryMenuOpen(false);
-                        onGenerateSummary('brief', selectedModel);
+                        onGenerateSummary('brief');
                       }}
+                      disabled={isProcessing}
                     >
                       Brief (2-3 sentences)
                     </button>
@@ -171,8 +175,9 @@ export default function NoteDetails({
                       onClick={() => {
                         setSummaryType('detailed');
                         setSummaryMenuOpen(false);
-                        onGenerateSummary('detailed', selectedModel);
+                        onGenerateSummary('detailed');
                       }}
+                      disabled={isProcessing}
                     >
                       Detailed
                     </button>
@@ -181,8 +186,9 @@ export default function NoteDetails({
                       onClick={() => {
                         setSummaryType('bullets');
                         setSummaryMenuOpen(false);
-                        onGenerateSummary('bullets', selectedModel);
+                        onGenerateSummary('bullets');
                       }}
+                      disabled={isProcessing}
                     >
                       Bullet Points
                     </button>
@@ -193,8 +199,9 @@ export default function NoteDetails({
             
             <div className="relative">
               <button
-                className="text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 border border-gray-300 rounded-md px-2 py-1"
-                onClick={() => setModelMenuOpen(!modelMenuOpen)}
+                className={`text-xs text-gray-600 hover:text-gray-800 flex items-center gap-1 border border-gray-300 rounded-md px-2 py-1 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => !isProcessing && setModelMenuOpen(!modelMenuOpen)}
+                disabled={isProcessing}
               >
                 <span className="truncate max-w-[80px]">
                   {OPENROUTER_MODELS.find(m => m.id === selectedModel)?.name.split(' ')[0] || 'Model'}
@@ -202,7 +209,7 @@ export default function NoteDetails({
                 <ChevronDown className="h-3 w-3" />
               </button>
               
-              {modelMenuOpen && (
+              {modelMenuOpen && !isProcessing && (
                 <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-10 w-48">
                   <div className="p-2 max-h-48 overflow-y-auto">
                     {OPENROUTER_MODELS.map(modelOption => (
