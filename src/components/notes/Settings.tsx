@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
 interface SettingsProps {
@@ -12,12 +12,27 @@ interface SettingsProps {
 export default function Settings({ isOpen, onClose, apiKey, selectedModel, onSave }: SettingsProps) {
   const [newApiKey, setNewApiKey] = useState(apiKey);
   const [newModel, setNewModel] = useState(selectedModel);
+  const [isEditingKey, setIsEditingKey] = useState(false);
+  
+  // Reset state when props change
+  useEffect(() => {
+    if (isOpen) {
+      setNewApiKey(apiKey);
+      setNewModel(selectedModel);
+      setIsEditingKey(false);
+    }
+  }, [isOpen, apiKey, selectedModel]);
   
   if (!isOpen) return null;
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(newApiKey, newModel);
+  };
+  
+  const handleDeleteKey = () => {
+    setNewApiKey('');
+    setIsEditingKey(true);
   };
   
   return (
@@ -30,14 +45,33 @@ export default function Settings({ isOpen, onClose, apiKey, selectedModel, onSav
             <label className="block text-gray-900 text-sm font-medium mb-2" htmlFor="apiKey">
               OpenRouter API Key
             </label>
-            <input
-              id="apiKey"
-              type="password"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              value={newApiKey}
-              onChange={(e) => setNewApiKey(e.target.value)}
-              placeholder="sk_or-..."
-            />
+            <div className="relative">
+              {apiKey && !isEditingKey ? (
+                <>
+                  <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 text-sm flex items-center select-none" style={{height: '40px'}}>
+                    API key is set (hidden)
+                  </div>
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 text-red-600 hover:text-red-800 bg-gray-50 hover:bg-red-50 rounded border border-red-100"
+                    onClick={handleDeleteKey}
+                  >
+                    Delete Key
+                  </button>
+                </>
+              ) : (
+                <input
+                  id="apiKey"
+                  type="password"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  value={newApiKey}
+                  onChange={(e) => setNewApiKey(e.target.value)}
+                  placeholder="Enter your OpenRouter API key"
+                  style={{height: '40px'}}
+                  autoFocus={isEditingKey}
+                />
+              )}
+            </div>
             <p className="text-xs text-gray-600 mt-1">
               Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenRouter.ai</a>
             </p>
