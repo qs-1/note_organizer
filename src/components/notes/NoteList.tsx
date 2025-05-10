@@ -195,6 +195,7 @@ interface NoteListProps {
   onNoteSelect: (note: Note) => void;
   onCreateNote: () => void;
   onImportDocument: (text: string, title: string) => void;
+  onOpenSettings: () => void;
 }
 
 export default function NoteList({ 
@@ -202,7 +203,8 @@ export default function NoteList({
   activeNoteId, 
   onNoteSelect, 
   onCreateNote,
-  onImportDocument
+  onImportDocument,
+  onOpenSettings
 }: NoteListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFileUploaderOpen, setIsFileUploaderOpen] = useState(false);
@@ -341,19 +343,19 @@ export default function NoteList({
   };
   
   return (
-    <div className={`border-r border-gray-200 bg-gray-50 flex flex-col h-screen text-gray-800 ${isSidebarCollapsed ? 'w-16' : 'w-72'} transition-[width] duration-300 ease-in-out overflow-hidden`}>
+    <div className={`border-r border-gray-200 bg-gray-50 flex flex-col h-screen text-gray-800 ${isSidebarCollapsed ? 'w-[56px]' : 'w-72'} transition-[width] duration-300 ease-in-out overflow-hidden`}>
       {/* Header with logo and toggle - fixed */}
-      <div className="p-4 border-b border-gray-200 bg-white shadow-sm flex items-center flex-shrink-0">
+      <div className="p-2 border-b border-gray-200 bg-white shadow-sm flex items-center flex-shrink-0 relative">
         <button
           onClick={() => setIsSidebarCollapsed(prev => !prev)}
-          className="p-1 rounded-md hover:bg-gray-100 text-gray-600 mr-3 flex-shrink-0"
+          className="ml-2 p-1 rounded-md hover:bg-gray-100 text-gray-600 z-10"
           aria-label="Toggle sidebar"
           title="Toggle sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
-        <div className="overflow-hidden flex-1">
-          <h1 className={`text-xl font-bold text-blue-800 whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-150 ${isSidebarCollapsed ? 'delay-0' : 'delay-150'}`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <h1 className={`text-xl font-bold text-blue-800 whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-150 ${isSidebarCollapsed ? 'delay-0' : 'delay-150'} pointer-events-none`}>
             Notes Organizer
           </h1>
         </div>
@@ -364,12 +366,12 @@ export default function NoteList({
         {/* Main navigation */}
         <div className="p-2 space-y-1 bg-gray-50">
           <button 
-            className={`flex items-center w-full py-2 px-3 rounded-md text-left ${view === 'home' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-200'}`}
+            className={`flex items-center py-2 px-3 rounded-md ${isSidebarCollapsed ? '' : 'w-full'} ${view === 'home' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-200'}`}
             onClick={() => setView('home')}
             title="Home"
           >
-            <Home className="h-4 w-4 flex-shrink-0" />
-            <div className="overflow-hidden ml-3">
+            <Home className="h-4 w-4" />
+            <div className={`overflow-hidden ${isSidebarCollapsed ? 'w-0' : 'ml-3'}`}>
               <span className={`font-medium whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-150 ${isSidebarCollapsed ? 'delay-0' : 'delay-150'}`}>
                 Home
               </span>
@@ -377,12 +379,12 @@ export default function NoteList({
           </button>
           
           <button 
-            className={`flex items-center w-full py-2 px-3 rounded-md text-left ${view === 'search' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-200'}`}
+            className={`flex items-center py-2 px-3 rounded-md ${isSidebarCollapsed ? '' : 'w-full'} ${view === 'search' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-200'}`}
             onClick={() => setView('search')}
             title="Search"
           >
-            <Search className="h-4 w-4 flex-shrink-0" />
-            <div className="overflow-hidden ml-3">
+            <Search className="h-4 w-4" />
+            <div className={`overflow-hidden ${isSidebarCollapsed ? 'w-0' : 'ml-3'}`}>
               <span className={`font-medium whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-150 ${isSidebarCollapsed ? 'delay-0' : 'delay-150'}`}>
                 Search
               </span>
@@ -502,6 +504,7 @@ export default function NoteList({
             className="flex items-center py-2 px-3 rounded-md hover:bg-gray-200 text-gray-700"
             aria-label="Settings"
             title="Settings"
+            onClick={onOpenSettings}
           >
             <Settings className="h-4 w-4" />
           </button>

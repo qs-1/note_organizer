@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Note } from '@/types';
 
 interface NoteEditorProps {
@@ -9,8 +9,8 @@ interface NoteEditorProps {
 export default function NoteEditor({ note, onSave }: NoteEditorProps) {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
-  const [isEditing, setIsEditing] = useState(true);
   
+  // Track original content and title when note changes
   useEffect(() => {
     if (note) {
       setContent(note.content);
@@ -21,8 +21,14 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
     }
   }, [note]);
   
+  // Determine if content has been modified
+  const hasChanges = useMemo(() => {
+    if (!note) return false;
+    return content !== note.content || title !== note.title;
+  }, [content, title, note]);
+  
   const handleSave = () => {
-    if (note) {
+    if (note && hasChanges) {
       onSave(content, title);
     }
   };
@@ -45,23 +51,10 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Note Title"
-            disabled={!isEditing}
           />
         </div>
         <div className="flex space-x-2">
-          <button 
-            className={`px-3 py-1 text-sm rounded-md ${isEditing ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-            onClick={() => setIsEditing(true)}
-          >
-            Edit
-          </button>
-          <button 
-            className={`px-3 py-1 text-sm rounded-md ${!isEditing ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-            onClick={() => setIsEditing(false)}
-          >
-            Preview
-          </button>
-          {isEditing && (
+          {hasChanges && (
             <button 
               className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200"
               onClick={handleSave}
@@ -74,23 +67,13 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
       
       <div className="flex-1 overflow-auto bg-white" style={{ backgroundColor: 'white' }}>
         <div className="p-6">
-          {isEditing ? (
-            <textarea
-              className="w-full h-full text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none resize-none"
-              style={{ backgroundColor: 'white', color: '#2d3748', height: 'calc(100vh - 120px)' }}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Start writing your note..."
-            />
-          ) : (
-            <div className="prose max-w-none bg-white" style={{ backgroundColor: 'white' }}>
-              {content.split('\n').map((line, index) => (
-                <p key={index} className="text-gray-800" style={{ color: '#2d3748' }}>
-                  {line || <br />}
-                </p>
-              ))}
-            </div>
-          )}
+          <textarea
+            className="w-full h-full text-gray-800 bg-white border-0 focus:ring-0 focus:outline-none resize-none"
+            style={{ backgroundColor: 'white', color: '#2d3748', height: 'calc(100vh - 120px)' }}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Start writing your note..."
+          />
         </div>
       </div>
     </div>

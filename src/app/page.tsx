@@ -300,6 +300,7 @@ export default function Home() {
         onNoteSelect={handleNoteSelect}
         onCreateNote={handleCreateNote}
         onImportDocument={handleImportDocument}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
       
       {/* Main Content Area */}
@@ -315,7 +316,6 @@ export default function Home() {
         onRemoveTag={handleRemoveTag}
         onGenerateSummary={handleGenerateSummary}
         onExportAnki={handleExportAnki}
-        onOpenSettings={() => setIsSettingsOpen(true)}
       />
       
       {/* Settings Modal */}
