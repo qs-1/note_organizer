@@ -16,26 +16,38 @@ const initialNotes: Note[] = [
     id: '1',
     title: 'Introduction to Biology',
     content: 'Biology is the study of living organisms and their interactions with each other and their environments.',
-    tags: ['Biology'],
+    tags: ['Biology', 'Science'],
     createdAt: new Date(2023, 4, 10).toISOString(),
     updatedAt: new Date(2023, 4, 10).toISOString(),
+    folderPath: '/academics/biology'
   },
   {
     id: '2',
     title: 'Quantum Physics Basics',
     content: 'Quantum physics deals with the behavior of matter and light on the atomic and subatomic scales.',
-    tags: ['Physics'],
+    tags: ['Physics', 'Science'],
     createdAt: new Date(2023, 4, 15).toISOString(),
     updatedAt: new Date(2023, 4, 15).toISOString(),
+    folderPath: '/academics/physics'
   },
   {
     id: '3',
     title: 'Literature Review Methods',
     content: 'A literature review surveys scholarly articles, books, and other sources relevant to a particular issue, research question, or theory.',
-    tags: ['Research'],
+    tags: ['Research', 'Academic'],
     createdAt: new Date(2023, 4, 20).toISOString(),
     updatedAt: new Date(2023, 4, 20).toISOString(),
+    folderPath: '/academics'
   },
+  {
+    id: '4',
+    title: 'Travel Plans',
+    content: 'Ideas for summer vacation destinations and activities.',
+    tags: ['Travel', 'Planning'],
+    createdAt: new Date(2023, 5, 1).toISOString(),
+    updatedAt: new Date(2023, 5, 1).toISOString(),
+    folderPath: '/personal'
+  }
 ];
 
 export default function Home() {
@@ -106,6 +118,7 @@ export default function Home() {
       tags: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      folderPath: '/' // Default to root folder
     };
     
     setNotes([newNote, ...notes]);
@@ -257,25 +270,25 @@ export default function Home() {
     setTimeout(() => setStatusMessage(null), 3000);
   };
   
-  // Handle document import (PDF, DOCX, images)
-  const handleImportDocument = (extractedText: string, suggestedTitle: string) => {
-    // Create a new note with the extracted text
+  // Import a document
+  const handleImportDocument = (text: string, title: string) => {
     const newNote: Note = {
       id: uuidv4(),
-      title: suggestedTitle || 'Imported Document',
-      content: extractedText,
+      title,
+      content: text,
       tags: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      folderPath: '/' // Default to root folder
     };
     
-    // Add to notes collection
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);
     
-    // Show success message
-    setStatusMessage('Document imported successfully');
-    setTimeout(() => setStatusMessage(null), 3000);
+    // Auto-generate a summary if API key is available
+    if (apiKey) {
+      handleGenerateSummary('brief');
+    }
   };
   
   return (

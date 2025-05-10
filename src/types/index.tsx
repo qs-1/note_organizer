@@ -6,6 +6,7 @@ export interface Note {
     createdAt: string;
     updatedAt: string;
     summary?: string;
+    folderPath: string | null;
   }
   
   export interface Tag {
@@ -13,4 +14,12 @@ export interface Note {
     name: string;
   }
   
-  export type SummaryType = 'brief' | 'detailed' | 'bullets'; 
+  export type SummaryType = 'brief' | 'detailed' | 'bullets';
+
+  export interface Folder {
+    id: string;
+    name: string;
+    path: string;
+    parentId: string | null;
+    children: Folder[];
+  } 
