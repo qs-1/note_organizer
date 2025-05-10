@@ -186,11 +186,6 @@ export default function Home() {
   
   // Delete a folder and all notes inside it
   const handleDeleteFolder = (folderPath: string) => {
-    // Confirm deletion
-    if (!window.confirm(`Are you sure you want to delete this folder and all its contents?`)) {
-      return;
-    }
-    
     // Filter out all notes that are in this folder or its subfolders
     const updatedNotes = notes.filter(note => {
       // Keep notes that don't have a folderPath
@@ -426,11 +421,6 @@ export default function Home() {
   
   // Delete note from sidebar
   const handleDeleteNoteFromSidebar = (noteId: string) => {
-    // Confirm deletion
-    if (!window.confirm('Are you sure you want to delete this note?')) {
-      return;
-    }
-    
     // Remove the note from the list
     const updatedNotes = notes.filter(note => note.id !== noteId);
     setNotes(updatedNotes);

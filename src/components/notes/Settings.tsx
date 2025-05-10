@@ -23,38 +23,38 @@ export default function Settings({ isOpen, onClose, apiKey, selectedModel, onSav
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Settings</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">Settings</h2>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="apiKey">
+            <label className="block text-gray-900 text-sm font-medium mb-2" htmlFor="apiKey">
               OpenRouter API Key
             </label>
             <input
               id="apiKey"
               type="password"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
               value={newApiKey}
               onChange={(e) => setNewApiKey(e.target.value)}
               placeholder="sk_or-..."
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">OpenRouter.ai</a>
+            <p className="text-xs text-gray-600 mt-1">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenRouter.ai</a>
             </p>
           </div>
           
           <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="model">
+            <label className="block text-gray-900 text-sm font-medium mb-2" htmlFor="model">
               Default AI Model
             </label>
             <select
               id="model"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               value={newModel}
               onChange={(e) => setNewModel(e.target.value)}
             >
               {OPENROUTER_MODELS.map(model => (
-                <option key={model.id} value={model.id}>
+                <option key={model.id} value={model.id} className="text-gray-900 bg-white">
                   {model.name}
                 </option>
               ))}

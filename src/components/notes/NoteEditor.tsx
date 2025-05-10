@@ -53,10 +53,10 @@ export default function NoteEditor({ note, onSave }: NoteEditorProps) {
         />
         
         <button
-          className={`px-3 py-1 rounded-md ml-2 ${
+          className={`px-4 py-1.5 rounded-md ml-2 border font-medium transition-colors duration-150 ${
             hasChanges 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
+              : 'hidden'
           }`}
           onClick={handleSave}
           disabled={!hasChanges}
