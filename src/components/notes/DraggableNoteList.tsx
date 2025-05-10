@@ -417,6 +417,8 @@ export default function DraggableNoteList({
                     notes={notes}
                     activeNoteId={activeNoteId}
                     onNoteSelect={onNoteSelect}
+                    onDeleteFolder={onDeleteFolder}
+                    onDeleteNote={onDeleteNote}
                   />
                 ))}
               </div>
@@ -444,6 +446,7 @@ export default function DraggableNoteList({
                       note={note}
                       isActive={note.id === activeNoteId}
                       onClick={() => onNoteSelect(note)}
+                      onDeleteNote={onDeleteNote}
                     />
                   ))}
                   {filteredNotes.length === 0 && (

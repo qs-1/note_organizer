@@ -1,20 +1,22 @@
 import React, { useRef, useState } from 'react';
 import { Note } from '@/types';
 import { useDragDrop } from '@/lib/DragDropContext';
-import { File } from 'lucide-react';
+import { File, Trash2 } from 'lucide-react';
 
 interface DraggableNoteProps {
   note: Note;
   isActive: boolean;
   onClick: () => void;
   level?: number;
+  onDeleteNote?: (noteId: string) => void;
 }
 
 const DraggableNote: React.FC<DraggableNoteProps> = ({ 
   note, 
   isActive, 
   onClick,
-  level = 0 
+  level = 0,
+  onDeleteNote
 }) => {
   const { draggedItem, setDraggedItem, handleDrop: contextHandleDrop, isDragging } = useDragDrop();
   const [isOver, setIsOver] = useState(false);
@@ -70,13 +72,24 @@ const DraggableNote: React.FC<DraggableNoteProps> = ({
   const handleDragEnd = () => {
     if (isDragging) setDraggedItem(null);
   };
+  
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDeleteNote) {
+      try {
+        onDeleteNote(note.id);
+      } catch (error) {
+        console.error('Error deleting note:', error);
+      }
+    }
+  };
 
   const isDragged = draggedItem?.id === note.id && draggedItem?.type === 'NOTE';
   
   return (
     <div 
       ref={noteRef}
-      className={`p-3 border-b border-gray-200 cursor-pointer ${isActive ? 'bg-blue-50' : 'hover:bg-gray-100'} ${isOver ? 'bg-blue-50' : ''} ${isDragged ? 'opacity-50' : ''}`}
+      className={`group p-3 border-b border-gray-200 cursor-pointer ${isActive ? 'bg-blue-50' : 'hover:bg-gray-100'} ${isOver ? 'bg-blue-50' : ''} ${isDragged ? 'opacity-50' : ''}`}
       onClick={onClick}
       draggable
       onDragStart={handleDragStart}
@@ -92,7 +105,18 @@ const DraggableNote: React.FC<DraggableNoteProps> = ({
             {note.title}
           </h3>
         </div>
-        <span className="text-xs text-gray-500 flex-shrink-0 ml-2">{formatDate(note.updatedAt)}</span>
+        <div className="flex items-center">
+          {onDeleteNote && (
+            <button 
+              className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity mr-2 flex-shrink-0"
+              onClick={handleDeleteClick}
+              title="Delete note"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <span className="text-xs text-gray-500 flex-shrink-0">{formatDate(note.updatedAt)}</span>
+        </div>
       </div>
       <p className="text-sm text-gray-600 mt-1 line-clamp-2 ml-6">
         {note.content}
