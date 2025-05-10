@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, Tag, X, Plus, Download, Copy, Check, ChevronDown } from 'lucide-react';
+import { Brain, Tag, X, Plus, Download, Copy, Check, ChevronDown, Trash2 } from 'lucide-react';
 import { Note, SummaryType } from '@/types';
 import { OPENROUTER_MODELS } from '@/lib/api/openrouter';
 
@@ -9,6 +9,7 @@ interface NoteDetailsProps {
   onRemoveTag: (tag: string) => void;
   onGenerateSummary: (type: SummaryType, model?: string) => void;
   onExportAnki: () => void;
+  onDelete: () => void;
 }
 
 export default function NoteDetails({ 
@@ -16,7 +17,8 @@ export default function NoteDetails({
   onAddTag, 
   onRemoveTag, 
   onGenerateSummary, 
-  onExportAnki
+  onExportAnki,
+  onDelete
 }: NoteDetailsProps) {
   const [newTag, setNewTag] = useState('');
   const [summaryType, setSummaryType] = useState<SummaryType>('brief');
@@ -226,7 +228,7 @@ export default function NoteDetails({
       </div>
       
       {/* Flashcards Section */}
-      <div className="p-4">
+      <div className="p-4 border-b border-gray-200">
         <h4 className="text-sm font-medium mb-2 flex items-center gap-1 text-gray-800">
           <Download className="h-4 w-4 text-gray-700" />
           <span>Flashcards</span>
@@ -237,6 +239,17 @@ export default function NoteDetails({
           onClick={onExportAnki}
         >
           Export to Anki
+        </button>
+      </div>
+
+      {/* Delete Section */}
+      <div className="p-4 mt-auto">
+        <button 
+          onClick={onDelete}
+          className="w-full px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md flex items-center justify-center gap-2 border border-red-200"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete Note
         </button>
       </div>
     </div>

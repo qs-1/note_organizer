@@ -193,8 +193,8 @@ interface NoteListProps {
   notes: Note[];
   activeNoteId: string | null;
   onNoteSelect: (note: Note) => void;
-  onCreateNote: () => void;
-  onImportDocument: (text: string, title: string) => void;
+  onCreateNote: (folderPath?: string) => void;
+  onImportDocument: (text: string, title: string, folderPath?: string) => void;
   onOpenSettings: () => void;
 }
 
@@ -339,7 +339,8 @@ export default function NoteList({
   const handleTextExtracted = (text: string, filename: string) => {
     // Extract title from filename (remove extension)
     const title = filename.split('.').slice(0, -1).join('.');
-    onImportDocument(text, title);
+    // Pass the active folder path to onImportDocument
+    onImportDocument(text, title, activeFolder || '/');
   };
   
   return (
@@ -414,13 +415,31 @@ export default function NoteList({
           <div className="p-2 border-t border-gray-200">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold px-2">Folders</h2>
-              <button 
-                className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
-                aria-label="Add new folder"
-                title="Add new folder"
-              >
-                <FolderPlus className="h-4 w-4" />
-              </button>
+              <div className="flex space-x-1">
+                <button 
+                  className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
+                  aria-label="Add new folder"
+                  title="Add new folder"
+                >
+                  <FolderPlus className="h-4 w-4" />
+                </button>
+                <button 
+                  className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
+                  onClick={() => setIsFileUploaderOpen(true)}
+                  aria-label="Import document"
+                  title="Import document"
+                >
+                  <FileUp className="h-4 w-4" />
+                </button>
+                <button 
+                  className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
+                  onClick={() => onCreateNote(activeFolder || '/')}
+                  aria-label="Create new note"
+                  title="Create new note"
+                >
+                  <PenSquare className="h-4 w-4" />
+                </button>
+              </div>
             </div>
             <div>
               {folders.map(folder => (
@@ -456,24 +475,6 @@ export default function NoteList({
                 <h2 className="text-sm font-semibold px-2">
                   {view === 'search' ? 'Search Results' : 'All Notes'}
                 </h2>
-                <div className="flex space-x-1">
-                  <button 
-                    className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
-                    onClick={() => setIsFileUploaderOpen(true)}
-                    aria-label="Import document"
-                    title="Import document"
-                  >
-                    <FileUp className="h-4 w-4" />
-                  </button>
-                  <button 
-                    className="p-1 rounded-full hover:bg-gray-200 text-gray-700"
-                    onClick={onCreateNote}
-                    aria-label="Create new note"
-                    title="Create new note"
-                  >
-                    <PenSquare className="h-4 w-4" />
-                  </button>
-                </div>
               </div>
               
               <div>
@@ -512,7 +513,7 @@ export default function NoteList({
           <div className={`overflow-hidden ${isSidebarCollapsed ? 'w-0' : 'w-auto'} transition-[width] duration-300`}>
             <button 
               className={`flex items-center py-2 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'} transition-opacity duration-150 ${isSidebarCollapsed ? 'delay-0' : 'delay-150'}`}
-              onClick={onCreateNote}
+              onClick={() => onCreateNote(activeFolder || '/')}
             >
               <Plus className="h-4 w-4 mr-1" />
               <span>New Note</span>

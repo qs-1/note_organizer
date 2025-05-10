@@ -110,7 +110,7 @@ export default function Home() {
   }, [notes]);
   
   // Create a new note
-  const handleCreateNote = () => {
+  const handleCreateNote = (folderPath: string = '/') => {
     const newNote: Note = {
       id: uuidv4(),
       title: 'New Note',
@@ -118,7 +118,7 @@ export default function Home() {
       tags: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      folderPath: '/' // Default to root folder
+      folderPath: folderPath
     };
     
     setNotes([newNote, ...notes]);
@@ -192,6 +192,24 @@ export default function Home() {
     });
     
     setNotes(updatedNotes);
+  };
+  
+  // Delete the active note
+  const handleDeleteNote = () => {
+    if (!activeNoteId) return;
+    
+    // Remove the note from the list
+    const updatedNotes = notes.filter(note => note.id !== activeNoteId);
+    setNotes(updatedNotes);
+    
+    // Clear the active note
+    setActiveNoteId(updatedNotes.length > 0 ? updatedNotes[0].id : null);
+    
+    // Show success message
+    setStatusMessage('Note deleted successfully');
+    setTimeout(() => {
+      setStatusMessage(null);
+    }, 3000);
   };
   
   // Generate a summary for the active note
@@ -271,7 +289,7 @@ export default function Home() {
   };
   
   // Import a document
-  const handleImportDocument = (text: string, title: string) => {
+  const handleImportDocument = (text: string, title: string, folderPath: string = '/') => {
     const newNote: Note = {
       id: uuidv4(),
       title,
@@ -279,7 +297,7 @@ export default function Home() {
       tags: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      folderPath: '/' // Default to root folder
+      folderPath: folderPath
     };
     
     setNotes([newNote, ...notes]);
@@ -316,6 +334,7 @@ export default function Home() {
         onRemoveTag={handleRemoveTag}
         onGenerateSummary={handleGenerateSummary}
         onExportAnki={handleExportAnki}
+        onDelete={handleDeleteNote}
       />
       
       {/* Settings Modal */}
@@ -329,7 +348,7 @@ export default function Home() {
       
       {/* Status Message */}
       {statusMessage && (
-        <div className="absolute bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-50 text-green-700 px-3 py-1.5 text-xs rounded-md shadow-sm border border-green-100">
           {statusMessage}
         </div>
       )}
